@@ -175,7 +175,7 @@ def remove_paths(graph, path_list, delete_entry_node, delete_sink_node):
     et la variable booléenne delete_sink_node pour indiquer si les noeuds de \
     sortie seront supprimés et retourne un graphe nettoyé des chemins indésirables"""
     for path in path_list:
-        for indice_node in enumerate(path):
+        for indice_node in range(len(path)):
             if (indice_node == 0 and not delete_entry_node) or \
                 (indice_node == len(path)-1 and not delete_sink_node):
                 continue

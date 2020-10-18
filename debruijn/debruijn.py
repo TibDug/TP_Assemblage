@@ -1,4 +1,4 @@
-#!/bin/env python3
+print#!/bin/env python3
 # -*- coding: utf-8 -*-
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -261,10 +261,8 @@ def solve_entry_tips(graph, starting_nodes):
     node = starting_nodes[0]
     last_node = node
     while len(list(graph.successors(node))) != 0:
-        print(list(graph.predecessors(node)))
         if len(list(graph.predecessors(node))) > 1:
             last_node = node
-            print("sallaoud")
         node = list(graph.successors(node))[0]
     if last_node == starting_nodes[0]:
         return graph
@@ -288,7 +286,6 @@ def solve_out_tips(graph, sink_nodes):
     first_node = node
     while len(list(graph.predecessors(node))) != 0:
         if len(list(graph.successors(node))) > 1:
-            print("alllo")
             first_node = node
         node = list(graph.predecessors(node))[0]
     if first_node == sink_nodes[0]:
@@ -313,7 +310,6 @@ def main():
     args = get_arguments()
 
     # Lecture du fichier et construction du graphe
-    print("Step1")
     kmer_dict = build_kmer_dict(args.fastq_file, args.kmer_size)
     graph = build_graph(kmer_dict)
     starting_nodes = get_starting_nodes(graph)
@@ -322,18 +318,15 @@ def main():
     #matplotlib.pyplot.show()
 
     # Résolution des bulles
-    print("Step2")
     graphs = simplify_bubbles(graph)
     
     # Résolution des pointes d’entrée et de sortie
-    print("Step3")
     graph = solve_entry_tips(graph, starting_nodes)
     graph = solve_out_tips(graph, sink_nodes)
     starting_nodes = get_starting_nodes(graph)
     sink_nodes = get_sink_nodes(graph)
     
     # Ecriture du/des contigs
-    print("Step 4")
     contigs_list = get_contigs(graph, starting_nodes, sink_nodes)
     save_contigs(contigs_list, args.output_file)
 

@@ -13,8 +13,6 @@
 
 """Perform assembly based on debruijn graph."""
 
-from operator import itemgetter
-from random import randint
 import argparse
 import os
 import sys
@@ -190,22 +188,6 @@ def select_best_path(graph, path_list, path_size_list, average_weight_list, \
     delete_entry_node pour indiquer si les noeuds d’entrée seront supprimés \
     et delete_sink_node pour indiquer si les noeuds de sortie seront supprimés \
     et retourne un graphe nettoyé des chemins indésirables"""
-    
-    """
-    if average_weight_list[0] > average_weight_list[1]:
-        remove_paths(graph, [path_list[1]], delete_entry_node, delete_sink_node)
-    elif average_weight_list[0] < average_weight_list[1]:
-        remove_paths(graph, [path_list[0]], delete_entry_node, delete_sink_node)
-    else:
-        if path_size_list[0] > path_size_list[1]:
-            remove_paths(graph, [path_list[1]], delete_entry_node, delete_sink_node)
-        elif path_size_list[0] < path_size_list[1]:
-            remove_paths(graph, [path_list[0]], delete_entry_node, delete_sink_node)
-        else:
-            remove_paths(graph, [path_list[random.randint(0,1)]], delete_entry_node, \
-                delete_sink_node)
-    return graph
-    """
     del_path_list = []
     while len(path_list) != 1:
         if average_weight_list[0] > average_weight_list[1]:
@@ -237,37 +219,6 @@ def select_best_path(graph, path_list, path_size_list, average_weight_list, \
                 del path_size_list[del_value]
     graph = remove_paths(graph, del_path_list, delete_entry_node, delete_sink_node)
     return graph
-    
-    '''
-    ##average_weight_list[:average_weight_list.index(max_weight_indice)] + average_weight_list[average_weight_list.index(max_weight_indice)+1:]
-    max_weight_indice = average_weight_list.index(max(average_weight_list))
-    #max_size_indice = max(path_size_list)
-    best_indice = max_weight_indice
-    equal_weight_indice_list = [max_weight_indice]
-    for weight_indice, weight in enumerate(average_weight_list):
-        if weight_indice != max_weight_indice:
-            if std([average_weight_list[max_weight_indice], weight]) > 0:
-                equal_weight_indice_list.append(weight_indice)
-    if len(equal_weight_indice_list) s> 1:
-        sizes_to_compare = []
-        for size_indice in equal_weight_indice_list:
-            sizes_to_compare.append(path_size_list[size_indice])
-        max_size_indice = path_size_list.index(max(sizes_to_compare))
-        best_indice = max_size_indice
-        equal_size_indice_list = [max_size_indice]
-        for size_indice, size in enumerate(path_size_list):
-            if size_indice != max_size_indice and size_indice in equal_weight_indice_list:
-                if std([path_size_list[max_size_indice], size]) > 0:
-                    equal_size_indice_list.append(size_indice)
-        if len(equal_size_indice_list) > 1:
-            best_indice = path_size_list.index(equal_size_indice_list[random.randint(0,len(equal_size_indice_list)-1)])
-    remove_paths(graph, path_list[:best_indice] + path_list[best_indice+1:], delete_entry_node, delete_sink_node)
-    return graph
-    '''
-            
-    
-    
-            
 
 
 def solve_bubble(graph, start_node, stop_node):
@@ -282,7 +233,7 @@ def solve_bubble(graph, start_node, stop_node):
         average_weight_list.append(path_average_weight(graph, path))
     graph = select_best_path(graph, path_list, path_size_list, average_weight_list)
     return graph
-    
+
 
 
 def simplify_bubbles(graph) :
@@ -301,43 +252,22 @@ def simplify_bubbles(graph) :
                         break
                 graph = solve_bubble(graph, node_begin_bubble, node_end_bubble)
                 paths = list(nx.all_simple_paths(graph, starting_node, sink_node))
-            '''
-            if len(paths) > 1:
-                for path in paths[1:]:
-                    differences_list = [x for x in paths[0] if x not in path]
-                    begin_bubble_list = []
-                    end_bubble_list = []
-                    while True:
-                        #begin_bubble_list.append(path[0][path[0].index(differences_list[0])-1])
-                        begin_tmp = paths[0][paths[0].index(differences_list[0])-1]
-                        del differences_list[0]
-                        cpt = 2
-                        while True:
-                            if begin_tmp + cpt >= len(paths[0]):
-                                break
-                            if differences_list[0] != paths[0][paths[0].index(begin_tmp + cpt)]:
-                                end_tmp = paths[0][paths[0].index(differences_list[0]+1)]
-                                break
-                            cpt += 1
-                            del differences_list[0]
-                        begin_bubble_list.append(begin_tmp)
-                        end_bubble_list.append(end_tmp)
-                        if len(differences_list) >= 1:
-                            break
-                    for bubble_indice in enumerate(begin_bubble_list):
-                        graph = solve_bubble(graph, begin_bubble_list[bubble_indice], end_bubble_list[bubble_indice])
-           '''
     return graph
 
 
-def solve_entry_tips(graph, starting_nodes) :
+def solve_entry_tips(graph, starting_nodes):
     """prend un graphe et une liste de noeuds d’entrée et retourne graphe sans \
     chemin d’entrée indésirable"""
     node = starting_nodes[0]
+    last_node = node
     while len(list(graph.successors(node))) != 0:
+        print(list(graph.predecessors(node)))
         if len(list(graph.predecessors(node))) > 1:
             last_node = node
+            print("sallaoud")
         node = list(graph.successors(node))[0]
+    if last_node == starting_nodes[0]:
+        return graph
     path_list = []
     path_size_list = []
     average_weight_list = []
@@ -346,20 +276,23 @@ def solve_entry_tips(graph, starting_nodes) :
             path_list.append(path)
             path_size_list.append(len(path))
             average_weight_list.append(path_average_weight(graph, path))
-    select_best_path(graph, path_list, path_size_list, average_weight_list, delete_entry_node = True, delete_sink_node = False)
+    select_best_path(graph, path_list, path_size_list, average_weight_list, \
+        delete_entry_node = True, delete_sink_node = False)
     return graph
-    
-        
 
 
-def solve_out_tips(graph, sink_nodes) :
+def solve_out_tips(graph, sink_nodes):
     """prend un graphe et une liste de noeuds de sortie et retourne graphe sans \
     chemin de sortie indésirable"""
     node = sink_nodes[0]
+    first_node = node
     while len(list(graph.predecessors(node))) != 0:
         if len(list(graph.successors(node))) > 1:
+            print("alllo")
             first_node = node
         node = list(graph.predecessors(node))[0]
+    if first_node == sink_nodes[0]:
+        return graph
     path_list = []
     path_size_list = []
     average_weight_list = []
@@ -368,32 +301,41 @@ def solve_out_tips(graph, sink_nodes) :
             path_list.append(path)
             path_size_list.append(len(path))
             average_weight_list.append(path_average_weight(graph, path))
-    select_best_path(graph, path_list, path_size_list, average_weight_list, delete_entry_node = False, delete_sink_node = True)
+    select_best_path(graph, path_list, path_size_list, average_weight_list, \
+        delete_entry_node = False, delete_sink_node = True)
     return graph
 
 
 def main():
     """Main program function"""
+
     # Get arguments
     args = get_arguments()
 
-    # Création du graphe de de Bruijn
+    # Lecture du fichier et construction du graphe
+    print("Step1")
     kmer_dict = build_kmer_dict(args.fastq_file, args.kmer_size)
-
     graph = build_graph(kmer_dict)
-
+    starting_nodes = get_starting_nodes(graph)
+    sink_nodes = get_sink_nodes(graph)
     #nx.draw(G, with_labels=True, font_weight='bold')
     #matplotlib.pyplot.show()
 
-    # Parcours du graphe de de Bruijn
+    # Résolution des bulles
+    print("Step2")
+    graphs = simplify_bubbles(graph)
+    
+    # Résolution des pointes d’entrée et de sortie
+    print("Step3")
+    graph = solve_entry_tips(graph, starting_nodes)
+    graph = solve_out_tips(graph, sink_nodes)
     starting_nodes = get_starting_nodes(graph)
     sink_nodes = get_sink_nodes(graph)
+    
+    # Ecriture du/des contigs
+    print("Step 4")
     contigs_list = get_contigs(graph, starting_nodes, sink_nodes)
     save_contigs(contigs_list, args.output_file)
-
-    # Simplification du graphe de De Bruijn
-    path_average_weight(graph, path)
-    remove_paths(graph, path_list, delete_entry_node, delete_sink_node)
 
 
 if __name__ == '__main__':
